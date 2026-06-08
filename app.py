@@ -198,7 +198,7 @@ st.markdown(
 
 st.sidebar.header("Input Parameters")
 
-U = st.sidebar.slider("Pad velocity U [m/s]", 0.05, 2.00, 0.50, 0.05)
+U = st.sidebar.slider("Pad velocity U [m/s]", 0.05, 2.00, 0.30, 0.05)
 mu0 = st.sidebar.slider("Base slurry viscosity μ₀ [Pa·s]", 0.001, 0.050, 0.010, 0.001)
 h0_um = st.sidebar.slider("Average gap h₀ [μm]", 5.0, 100.0, 20.0, 1.0)
 
