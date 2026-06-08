@@ -111,6 +111,21 @@ def solve_reynolds(
     Re = 1000.0 * U * np.mean(h) / mu_eff
     aspect_ratio = np.mean(h) / Lx
 
+        # Flow-rate estimate from lubrication theory
+    # qx and qy are gap-integrated local flow rates per unit width.
+    dpdx = np.gradient(p, dx, axis=0)
+    dpdy = np.gradient(p, dy, axis=1)
+
+    qx = -(h ** 3) / (12.0 * mu_eff) * dpdx + U * h / 2.0
+    qy = -(h ** 3) / (12.0 * mu_eff) * dpdy
+
+    # Net x-direction volumetric flow rate through the domain
+    Qx_sections = np.trapezoid(qx, y, axis=1)
+    net_flow_rate_x = float(np.mean(Qx_sections))
+
+    # Hydrodynamic lift force from positive pressure
+    lift_force = float(np.sum(p_pos) * dx * dy)
+
     return {
         "x_mm": x * 1e3,
         "y_mm": y * 1e3,
@@ -129,6 +144,8 @@ def solve_reynolds(
         "max_tau": float(np.max(tau)),
         "avg_tau": float(np.mean(tau)),
         "avg_rr": float(np.mean(removal_rate)),
+        "net_flow_rate_x": net_flow_rate_x,
+        "lift_force": lift_force,
         "rr_nonuniformity": float(
             np.std(removal_rate) / (np.mean(removal_rate) + 1e-30) * 100.0
         )
@@ -248,6 +265,10 @@ with tab1:
     c3.metric("Average shear stress [Pa]", f"{results['avg_tau']:.3e}")
     c4.metric("Reynolds number", f"{results['Re']:.3e}")
 
+    c5, c6 = st.columns(2)
+    c5.metric("Net flow rate Qx [m³/s]", f"{results['net_flow_rate_x']:.3e}")
+    c6.metric("Lift force [N]", f"{results['lift_force']:.3e}")
+    
     st.subheader("Gap profile")
     st.plotly_chart(
         surface_fig(
